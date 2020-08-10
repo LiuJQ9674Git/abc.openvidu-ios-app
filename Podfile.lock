@@ -1,0 +1,24 @@
+PODS:
+  - Alamofire (4.9.1)
+  - GoogleWebRTC (1.1.28604)
+  - Starscream (3.0.2)
+
+DEPENDENCIES:
+  - Alamofire (~> 4.0)
+  - GoogleWebRTC (= 1.1.28604)
+  - Starscream (= 3.0.2)
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - Alamofire
+    - GoogleWebRTC
+    - Starscream
+
+SPEC CHECKSUMS:
+  Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
+  GoogleWebRTC: 006112977cf03b7ee4fb898ae1e2016e2312ee0b
+  Starscream: b512c62f6706421221b5ceb2ba01a9f58aca5bea
+
+PODFILE CHECKSUM: d736fd5d8d315348f45a7b2dc934a7697032b77c
+
+COCOAPODS: 1.9.0
