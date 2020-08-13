@@ -10,16 +10,17 @@ import Foundation
 import UIKit
 import WebRTC
 import Alamofire
+//import Result
 
 class VideosViewController: UIViewController {
-    
+    var tokenUrl:String="https://192.168.1.103:4443"
     var peersManager: PeersManager?
     var socket: WebSocketListener?
     var localAudioTrack: RTCAudioTrack?
     var localVideoTrack: RTCVideoTrack?
     var videoSource: RTCVideoSource?
     private var videoCapturer: RTCVideoCapturer?
-    var url: String = ""
+    var url: String = "wss://192.168.1.101:4443"
     var sessionName: String = ""
     var participantName: String = ""
     @IBOutlet weak var localVideoView: UIView!
@@ -68,101 +69,72 @@ class VideosViewController: UIViewController {
     
     func startCheckTrusted(){
         let parameters:Parameters = [
-            "customSessionId": "SessionA",
+            "customSessionId": self.sessionName,
         ]
         let headers: HTTPHeaders = [
             "Authorization": "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
             "Content-Type": "application/json; charset=utf-8"
         ]
-//        let headers: HTTPHeaders = [
-//            "Authorization": "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU"
-//        ]
         let manager = SessionManager.default
         manager.delegate.sessionDidReceiveChallenge = {
             session,challenge in
             return    (URLSession.AuthChallengeDisposition.useCredential,URLCredential(trust:challenge.protectionSpace.serverTrust!))
         }
-        //let json = "{\"customSessionId\": \"SessionA\"}"
-        //AF.
-        //let json = "{\"session\": \"" + sessionId + "\"}"
-//        let parametersTokens:Parameters = [
-//            "session": "6m6xfsbfvme5rhek",
-//        ]
-//        manager.request("https://192.168.1.101:4443/api/tokens",
-//             method: .post, parameters: parametersTokens,headers: headers).responseJSON { response in
-//             debugPrint(response)
-//       }
-        //显示结果：{"id":"SessionA","createdAt":1597010548253} Alamofire 4.0
-        manager.request("https://192.168.1.101:4443/api/sessions",
-                        method: .post, parameters: parameters,
-                        encoding:JSONEncoding.default, headers: headers).responseJSON { response in
-                   debugPrint(response)
-             }
-      
+     //显示结果：{"id":"SessionA","createdAt":1597010548253} Alamofire 4.0
+      manager.request(tokenUrl+"/api/sessions",
+                              method: .post, parameters: parameters,
+                              encoding:JSONEncoding.default, headers: headers).responseJSON { response in
+            var sessionId = ""
+            switch(response.result) {
+            case .success(_):
+                // 将数据转化为字典
+                if let dic = try? JSONSerialization.jsonObject(with: response.data!, options:
+                    JSONSerialization.ReadingOptions.allowFragments) as! [String: Any] {
+                    if dic["id"] != nil {
+                        sessionId = dic["id"] as! String
+                        self.createToken(sessionId:sessionId)
+                    }
+            
+                }
+            break
+            case .failure(_):
+                print("请求网络失败:\(response.result)")
+                self.startDefaultToken()
+                break
+            }
+        }
     }
-    func start() {
-        
-            let url = URL(string: "https://192.168.1.101:4443/api/sessions")!
-            var request = URLRequest(url: url)
-            request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-            request.addValue("Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU", forHTTPHeaderField: "Authorization")
-            request.httpMethod = "POST"
-            let json = "{\"customSessionId\": \"SessionA\"}"
-            request.httpBody = json.data(using: .utf8)
-            var responseString = ""
-            let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print("error=\(String(describing: error))")
-                    return
-                }
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print("response = \(String(describing: response))")
-                }
-                responseString = String(data: data, encoding: .utf8)!
-                print(responseString)
-                
-                let jsonData = responseString.data(using: .utf8)!
-                var sessionId = ""
-                do {
-                    let json = try JSONSerialization.jsonObject(with: jsonData, options : .allowFragments) as? Dictionary<String,Any>
-                    sessionId = json!["id"] as! String
-                } catch let error as NSError {
-                    print(error)
-                }
-                // Get Token
-                let url = URL(string: "192.168.1.101:4443/api/tokens")!
-                var request = URLRequest(url: url)
-                request.setValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-                request.addValue("Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU", forHTTPHeaderField: "Authorization")
-                request.httpMethod = "POST"
-                let json = "{\"session\": \"" + sessionId + "\"}"
-                request.httpBody = json.data(using: .utf8)
-                let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                    guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                        print("error=\(String(describing: error))")
-                        return
+    func createToken(sessionId: String) {
+        let parameters:Parameters = [
+                   "session": sessionId,
+               ]
+        let headers: HTTPHeaders = [
+            "Authorization": "Basic T1BFTlZJRFVBUFA6TVlfU0VDUkVU",
+            "Content-Type": "application/json; charset=utf-8"
+        ]
+        let manager = SessionManager.default
+        manager.delegate.sessionDidReceiveChallenge = {
+            session,challenge in
+            return    (URLSession.AuthChallengeDisposition.useCredential,URLCredential(trust:challenge.protectionSpace.serverTrust!))
+        }
+        manager.request(tokenUrl+"/api/tokens",
+                              method: .post, parameters: parameters,
+                              encoding:JSONEncoding.default, headers: headers).responseJSON { response in
+            var token = ""
+            switch(response.result) {
+            case .success(_):
+                // 将数据转化为字典
+                if let dic = try? JSONSerialization.jsonObject(with: response.data!, options:
+                    JSONSerialization.ReadingOptions.allowFragments) as! [String: Any] {
+    
+                    if dic["token"] != nil {
+                       
+                        token = dic["token"] as! String
+                         print("获取Token值:\(token)")
+                    } else {
+                        token = self.url+"?sessionId=SessionA&token=6m6xfsbfvme5rhek"
                     }
-                    if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                        print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                        print("response = \(String(describing: response))")
-                    }
-                    
-                    let responseString = String(data: data, encoding: .utf8)
-                    print("responseString = \(String(describing: responseString))")
-                    let jsonData = responseString?.data(using: .utf8)!
-                    var token: String = ""
-                    do {
-                        let jsonArray = try JSONSerialization.jsonObject(with: jsonData!, options : .allowFragments) as? Dictionary<String,Any>
-                        if jsonArray?["token"] != nil {
-                            print("response someKey exists")
-                            token = jsonArray?["token"] as! String
-                        } else {
-                            token = "wss://192.168.1.101:4443?sessionId=SessionA&token=6m6xfsbfvme5rhek"
-                        }
-                    } catch let error as NSError {
-                        print(error)
-                    }
+                    //
                     self.createSocket(token: token)
                     
                     DispatchQueue.main.async {
@@ -172,14 +144,19 @@ class VideosViewController: UIViewController {
                         self.peersManager!.createLocalOffer(mediaConstraints: sdpConstraints);
                     }
                 }
-                task.resume()
+            break
+
+            case .failure(_):
+                print("请求网络失败:\(response.result)")
+                self.startDefaultToken()
+                break
             }
-            task.resume()
-        
+        }
     }
+    
     func startDefaultToken() {
-        //token = "wss://192.168.1.101:4443?sessionId=SessionA&token=6m6xfsbfvme5rhek"
-        self.createSocket(token: "6m6xfsbfvme5rhek")
+        let tokendefault = self.url+"?sessionId=SessionA&token=6m6xfsbfvme5rhek"
+        self.createSocket(token: tokendefault)
         //主线队列中同步执行
         DispatchQueue.main.async {
             self.createLocalVideoView()

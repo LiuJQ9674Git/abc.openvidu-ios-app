@@ -32,7 +32,7 @@
                                     <segue destination="h2t-sa-kc1" kind="show" id="IHG-as-RlS"/>
                                 </connections>
                             </button>
-                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="wss://192.168.1.101:4443/openvidu" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="STK-Bg-1oY">
+                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="wss://192.168.1.103:4443/openvidu" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="STK-Bg-1oY">
                                 <rect key="frame" x="100" y="239" width="512" height="30"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="JHm-rv-8h7"/>
