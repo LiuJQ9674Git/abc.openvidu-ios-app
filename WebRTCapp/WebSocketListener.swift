@@ -144,7 +144,7 @@ class WebSocketListener: WebSocketDelegate {
             let mandatoryConstraints = ["OfferToReceiveAudio": "true", "OfferToReceiveVideo": "true"]
             let sdpConstraints = RTCMediaConstraints(mandatoryConstraints: mandatoryConstraints, optionalConstraints: nil)
             remoteParticipant.peerConnection!.offer(for: sdpConstraints, completionHandler: {(sessionDescription, error) in
-                print("Remote Offer: " + error.debugDescription)
+                print("创建远端协商Remote Offer: " + error.debugDescription)
                 self.participants[remoteParticipant.id!]!.peerConnection!.setLocalDescription(sessionDescription!, completionHandler: {(error) in
                     print("Remote Peer Local Description set " + error.debugDescription)
                 })
